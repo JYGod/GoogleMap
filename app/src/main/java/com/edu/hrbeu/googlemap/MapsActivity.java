@@ -3,7 +3,9 @@ package com.edu.hrbeu.googlemap;
 import android.*;
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.databinding.ViewDataBinding;
@@ -61,11 +63,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean mLocationPermissionGranted;
     private LatLng mDefaultLocation = new LatLng(39.8423, 116.4989955);
     private MarkerOptions mMarker;
+    private Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mContext=this;
         //从保存的实例中获取位置
         if (savedInstanceState!=null){
             mLastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
@@ -85,12 +89,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void initMarker() {
-        mMarker=new MarkerOptions().position(mDefaultLocation).title("我的位置");
-       // LatLng currentLatLng = new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude());
-        mMap.addMarker(mMarker);
-        mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation,12));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(16),2000,null);
+       // mMarker=new MarkerOptions().position(mDefaultLocation).title("我的位置");
+        LatLng currentLatLng=null;
+        if (mLastKnownLocation!=null){
+            currentLatLng = new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude());
+            //mMap.addMarker(mMarker);
+            mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng,12));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(16),2000,null);
+        }else {
+            mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation,12));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(16),2000,null);
+        }
     }
 
     @Override
@@ -122,6 +133,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void clickListener() {
         mBinding.include.ivTitleMenu.setOnClickListener(this);
         mBinding.bottom.btnLocate.setOnClickListener(this);
+        mBinding.bottom.btnScan.setOnClickListener(this);
 
     }
 
@@ -239,8 +251,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (mLastKnownLocation != null){
                 Log.e("定位成功:","经度："+mLastKnownLocation.getLongitude()+"  纬度："+mLastKnownLocation.getLatitude());
                 LatLng currentLatLng = new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude());
-                mMarker.position(currentLatLng);
-                mMap.addMarker(mMarker);
+               // mMarker.position(currentLatLng);
                 getDeviceLocation();
             }
         }
@@ -264,12 +275,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onClick(View view) {
+        Intent intent=new Intent();
         switch (view.getId()){
             case R.id.iv_title_menu:
                 mBinding.drawerLayout.openDrawer(GravityCompat.START);
                 break;
             case R.id.btn_locate:
                 showCurrentPlace();
+                break;
+            case R.id.btn_scan:
+                intent.setClass(mContext,ScannerActivity.class);
+                startActivity(intent);
+                break;
+            default:
                 break;
         }
     }
