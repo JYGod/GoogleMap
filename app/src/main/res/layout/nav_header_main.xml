@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        android:background="@color/pureWhite">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/pureWhite"
+            android:orientation="vertical">
+
+            <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/my_header_bg"
+                android:layout_width="match_parent"
+                android:layout_height="173dp"
+                android:background="@color/pureWhite"
+                android:gravity="bottom"
+                android:orientation="vertical"
+                android:theme="@style/ThemeOverlay.AppCompat.Dark">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/pureWhite"
+                    android:gravity="left|center"
+                    android:orientation="horizontal"
+                    android:paddingBottom="16dp"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp"
+                    android:paddingTop="16dp">
+
+                    <ImageView
+                        android:id="@+id/iv_head"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:scaleType="centerCrop" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingTop="16dp">
+
+                        <TextView
+                            android:id="@+id/tv_username"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="10dp"
+                            android:text="JYGoddd丶"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                            android:textColor="@color/appBarText"
+                            android:textSize="17sp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_nav_homepage"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/ripple_one_item_bg"
+                android:clickable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/receipt" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16dp"
+                    android:text="我的行程"
+                    android:textColor="@color/appBarText"
+                    android:textSize="@dimen/menu_left_text_size" />
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/ll_nav_scan_download"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/ripple_one_item_bg"
+                android:clickable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/wallet" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16dp"
+                    android:text="我的钱包"
+                    android:textColor="@color/appBarText"
+                    android:textSize="@dimen/menu_left_text_size" />
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/ll_nav_deedback"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/ripple_one_item_bg"
+                android:clickable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/redeem" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16dp"
+                    android:text="输入优惠码"
+                    android:textColor="@color/appBarText"
+                    android:textSize="@dimen/menu_left_text_size" />
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/ll_nav_problem"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/ripple_one_item_bg"
+                android:clickable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/share" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16dp"
+                    android:text="邀请赢奖"
+                    android:textColor="@color/appBarText"
+                    android:textSize="@dimen/menu_left_text_size" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_nav_about"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/ripple_one_item_bg"
+                android:clickable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/help" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16dp"
+                    android:text="使用指南"
+                    android:textColor="@color/appBarText"
+                    android:textSize="@dimen/menu_left_text_size" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_nav_login"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/ripple_one_item_bg"
+                android:clickable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/info" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16dp"
+                    android:text="关于"
+                    android:textColor="@color/appBarText"
+                    android:textSize="@dimen/menu_left_text_size" />
+
+            </LinearLayout>
+
+
+
+        </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
+</layout>
