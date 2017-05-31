@@ -1,7 +1,6 @@
-package com.edu.hrbeu.googlemap;
+package com.edu.hrbeu.googlemap.activity;
 
 
-import android.app.Activity;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
@@ -10,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.edu.hrbeu.googlemap.R;
 import com.edu.hrbeu.googlemap.databinding.ActivityScannerBinding;
 import com.uuzuche.lib_zxing.activity.CaptureFragment;
 import com.uuzuche.lib_zxing.activity.CodeUtils;
@@ -21,7 +21,7 @@ public class ScannerActivity extends
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mBinding= DataBindingUtil.setContentView(this,R.layout.activity_scanner);
+        mBinding= DataBindingUtil.setContentView(this, R.layout.activity_scanner);
 
         CaptureFragment captureFragment=new CaptureFragment();
         // 为二维码扫描界面设置定制化界面

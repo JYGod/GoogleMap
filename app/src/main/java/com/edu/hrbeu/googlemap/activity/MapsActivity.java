@@ -1,52 +1,85 @@
-package com.edu.hrbeu.googlemap;
+package com.edu.hrbeu.googlemap.activity;
 
-import android.*;
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
-import android.databinding.ViewDataBinding;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.edu.hrbeu.googlemap.*;
+import com.edu.hrbeu.googlemap.R;
 import com.edu.hrbeu.googlemap.databinding.ActivityMapsBinding;
 import com.edu.hrbeu.googlemap.databinding.NavHeaderMainBinding;
+import com.edu.hrbeu.googlemap.model.MyItem;
+import com.edu.hrbeu.googlemap.pojo.RoutesPOJO;
+import com.edu.hrbeu.googlemap.service.IMapQuery;
+import com.edu.hrbeu.googlemap.utils.AnimUtil;
+import com.edu.hrbeu.googlemap.utils.DrawableUtil;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.PlaceLikelihood;
-import com.google.android.gms.location.places.PlaceLikelihoodBuffer;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.PolyUtil;
+import com.google.maps.android.clustering.Cluster;
+import com.google.maps.android.clustering.ClusterItem;
+import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.view.DefaultClusterRenderer;
+import com.google.maps.android.ui.IconGenerator;
+import com.orhanobut.dialogplus.DialogPlus;
+import com.orhanobut.dialogplus.ViewHolder;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+import static com.edu.hrbeu.googlemap.service.IMapQuery.retrofit;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener,GoogleMap.OnMyLocationButtonClickListener ,
-        ActivityCompat.OnRequestPermissionsResultCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        ActivityCompat.OnRequestPermissionsResultCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+        LocationSource.OnLocationChangedListener,GoogleMap.OnCameraMoveListener,GoogleMap.OnCameraIdleListener,
+        GoogleMap.OnMarkerClickListener,GoogleMap.OnCameraMoveCanceledListener{
 
     private static final String TAG = MapsActivity.class.getSimpleName();
     private static final String KEY_LOCATION = "location";
@@ -62,8 +95,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private CameraPosition mCameraPosiotion;
     private boolean mLocationPermissionGranted;
     private LatLng mDefaultLocation = new LatLng(39.8423, 116.4989955);
-    private MarkerOptions mMarker;
     private Context mContext;
+    private final static int ALPHA_ADJUSTMENT = 0x77000000;
+    private final double[] longs=new double[]{126.681032,126.682234,126.678178};
+    private final double[] lats=new double[]{45.775246,45.774438,45.774168};
+    private LatLng centerPoint;
+    private LatLng centerPointTemp;
+    private PolylineOptions polyLine;
+    private Polyline polylines;
+    private ImageView ivWheel;
+    private LatLngBounds latLngBounds;
+    private Marker mCurrentMarker;
+    private Marker markers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +119,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mCameraPosiotion = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
         }
 
-        mBinding= DataBindingUtil.setContentView(this,R.layout.activity_maps);
+        mBinding= DataBindingUtil.setContentView(this, com.edu.hrbeu.googlemap.R.layout.activity_maps);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -88,17 +131,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    private void initMarker() {
+    private void initCamera() {
        // mMarker=new MarkerOptions().position(mDefaultLocation).title("我的位置");
         LatLng currentLatLng=null;
         if (mLastKnownLocation!=null){
             currentLatLng = new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude());
             //mMap.addMarker(mMarker);
-            mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng,12));
+            mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng,14));
             mMap.animateCamera(CameraUpdateFactory.zoomTo(16),2000,null);
         }else {
-            mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+            mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation,12));
             mMap.animateCamera(CameraUpdateFactory.zoomTo(16),2000,null);
         }
@@ -174,22 +217,32 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 return infoWindow;
             }
         });
+       // mMap.getProjection().getVisibleRegion().latLngBounds.getCenter();
 
         updateLocationUI();
 
         getDeviceLocation();
-        initMarker();
+        initCamera();
+        initNearMarkers();
+
         Log.e(TAG,"onMapReady");
 
-        /**
-         *     LatLng beijing = new LatLng(39.860070, 116.467220);
-         mMap.addMarker(new MarkerOptions().position(beijing).title("我的位置"));
-         mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
-         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(beijing,12));
-         mMap.animateCamera(CameraUpdateFactory.zoomTo(16),2000,null);
-         */
+        mMap.setOnCameraMoveListener(this);
+        mMap.setOnCameraIdleListener(this);
+        mMap.setOnCameraMoveCanceledListener(this);
 
     }
+
+    private void initNearMarkers() {
+        BitmapDescriptor  icon = BitmapDescriptorFactory.fromBitmap(DrawableUtil.zoomDrawable(getResources().getDrawable(R.drawable.markers),120,130));
+        for (int i=0;i<lats.length;i++){
+            markers = mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(lats[i], longs[i]))
+                    .icon(icon));
+        }
+        mMap.setOnMarkerClickListener(this);
+    }
+
 
     private void getDeviceLocation() {
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION)
@@ -341,5 +394,143 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.e(TAG, "Play services connection failed: ConnectionResult.getErrorCode() = "
                 + connectionResult.getErrorCode());
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        LatLng centerPoint = mMap.getProjection().getVisibleRegion().latLngBounds.getCenter();
+        Log.e("中心点经纬度------->",String.valueOf(centerPoint.longitude)+"\n"+String.valueOf(centerPoint.latitude));
+
+        Log.e("当前经纬度------->",String.valueOf(location.getLongitude())+"\n"+String.valueOf(location.getLatitude()));
+    }
+
+    @Override
+    public void onCameraMove() {
+         centerPoint=  mMap.getCameraPosition().target;
+       // Log.e("中心点经纬度：  ",String.valueOf(centerPoint.longitude)+"\n"+String.valueOf(centerPoint.latitude));
+    }
+
+
+    /**
+     * 绘制路线
+     * @param marker
+     */
+    private void drawPolyLine(Marker marker,DialogPlus dialogPlus) {
+        Map<String,String>map=new HashMap<>();
+        centerPointTemp=centerPoint;
+        if (mBinding.mapCenter.getVisibility()!=View.GONE){
+            map.put("origin", String.valueOf(centerPoint.latitude)+","+ String.valueOf(centerPoint.longitude));
+        }else {
+            map.put("origin", String.valueOf(mCurrentMarker.getPosition().latitude)+","+ String.valueOf(mCurrentMarker.getPosition().longitude));
+        }
+        map.put("destination", String.valueOf(marker.getPosition().latitude)+
+                ","+String.valueOf(marker.getPosition().longitude));
+        map.put("sensor","false");
+        map.put("mode","walking");
+        IMapQuery queryRoutes = retrofit.create(IMapQuery.class);
+        Call<RoutesPOJO>call = queryRoutes.getRoutes(map);
+        call.enqueue(new Callback<RoutesPOJO>() {
+            @Override
+            public void onResponse(Call<RoutesPOJO> call, Response<RoutesPOJO> response) {
+                clearPolyLines();
+                RoutesPOJO routesPOJO=response.body();
+                String routeCode = routesPOJO.getRoutes().get(0).getOverview_polyline().getPoints();
+                List<LatLng> line= PolyUtil.decode(routeCode);
+                polyLine = new PolylineOptions();
+                double tolerance = 10; // meters
+                List<LatLng> simplifiedLine = PolyUtil.simplify(line, tolerance);
+                polylines = mMap.addPolyline(polyLine.addAll(simplifiedLine)
+                        .width(20)
+                        .color(getResources().getColor(R.color.routeGreen) - ALPHA_ADJUSTMENT));
+                ivWheel.clearAnimation();
+                dialogPlus.dismiss();
+                RoutesPOJO.Route.Bound bounds = routesPOJO.getRoutes().get(0).getBounds();
+                latLngBounds=new LatLngBounds(new LatLng(bounds.getSouthwest().getLat(),bounds.getSouthwest().getLng()),
+                        new LatLng(bounds.getNortheast().getLat(),bounds.getNortheast().getLng()));
+                RoutesPOJO.Route.Leg leg = routesPOJO.getRoutes().get(0).getLegs().get(0);
+                moveCameraFixRoute(leg.getDistance().getText(),leg.getDuration().getText());
+
+            }
+
+            @Override
+            public void onFailure(Call<RoutesPOJO> call, Throwable t) {
+                Log.e("请求失败：","error");
+                ivWheel.clearAnimation();
+                dialogPlus.dismiss();
+            }
+        });
+    }
+
+    /**
+     * 移动镜头适应路径
+     */
+    private void moveCameraFixRoute(String distance,String duration) {
+        BitmapDescriptor  icon = BitmapDescriptorFactory.fromBitmap(DrawableUtil.zoomDrawable(getResources().getDrawable(R.drawable.marker),60,90));
+        MarkerOptions markerOptions=null;
+       if (mBinding.mapCenter.getVisibility()!=View.GONE){
+            markerOptions = new MarkerOptions()
+                   .position(centerPointTemp)
+                   .icon(icon)
+                   .title("距您" + distance + "\n" + "步行" + duration);
+           mCurrentMarker = mMap.addMarker(markerOptions);
+           Log.e("添加的marker ID：",mCurrentMarker.getId());
+           mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,200),1500,null);
+        //   mMap.animateCamera(CameraUpdateFactory.zoomTo(mMap.getCameraPosition().zoom),2000,null);
+       }
+        mBinding.mapCenter.setVisibility(View.GONE);
+        mCurrentMarker.showInfoWindow();
+     //   mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,200));
+        mMap.setOnMarkerClickListener(this);
+    }
+
+    private void clearPolyLines() {
+        if (polylines!=null){
+            polylines.remove();
+        }
+    }
+
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        Log.e("markerId",marker.getId());
+        if (mCurrentMarker!=null&&marker.getId().equals(mCurrentMarker.getId())){
+            mBinding.mapCenter.setVisibility(View.VISIBLE);
+            mCurrentMarker.remove();
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerPointTemp,mMap.getCameraPosition().zoom));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(16),1500,null);
+            clearPolyLines();
+        }else {
+            final DialogPlus dialog = DialogPlus.newDialog(mContext)
+                    .setContentHolder(new ViewHolder(R.layout.route_dialog))
+                    .setCancelable(false)
+                    .setExpanded(true, ViewGroup.LayoutParams.WRAP_CONTENT)
+                    .setContentHeight(ViewGroup.LayoutParams.MATCH_PARENT)
+                    .setContentWidth(ViewGroup.LayoutParams.WRAP_CONTENT)
+                    .setGravity(Gravity.CENTER)
+                    .create();
+            Animation rotate= AnimationUtils.loadAnimation(this,R.anim.rotate_anim);
+            ivWheel=  (ImageView)dialog.getHolderView().findViewById(R.id.iv_wheel);
+            ivWheel.setAnimation(rotate);
+            ivWheel.startAnimation(rotate);
+            dialog.show();
+            drawPolyLine(marker,dialog);
+        }
+        return true;
+    }
+
+
+    @Override
+    public void onCameraMoveCanceled() {
+        View view=mBinding.mapCenter;
+        view.clearAnimation();
+        Log.e("Camera canceled","canceled");
+        AnimUtil.animateJump(view);
+    }
+
+    @Override
+    public void onCameraIdle() {
+        View view=mBinding.mapCenter;
+        Log.e("Camera canceled","canceled");
+        AnimUtil.animateJump(view);
     }
 }

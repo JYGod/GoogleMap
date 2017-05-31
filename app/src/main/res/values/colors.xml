@@ -8,4 +8,5 @@
     <color name="appBarColor">#efefef</color>
     <color name="appBarText">#535353</color>
     <color name="pureWhite">#ffffff</color>
+    <color name="routeGreen">#208747</color>
 </resources>

@@ -62,6 +62,14 @@ public class ImgLoadUtil {
                 .into(imageView);
     }
 
+    public static void displaySquare(ImageView imageView,String imageUrl){
+        Glide.with(imageView.getContext())
+                .load(imageUrl)
+                .crossFade(500)
+                .error(R.drawable.pic_null)
+                .into(imageView);
+    }
+
 
 
 
