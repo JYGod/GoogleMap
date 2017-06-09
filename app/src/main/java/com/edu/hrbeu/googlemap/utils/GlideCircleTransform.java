@@ -1,4 +1,4 @@
-package com.edu.hrbeu.googlemap;
+package com.edu.hrbeu.googlemap.utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;

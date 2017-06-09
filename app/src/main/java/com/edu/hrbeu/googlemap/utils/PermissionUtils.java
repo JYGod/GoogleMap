@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.edu.hrbeu.googlemap;
+package com.edu.hrbeu.googlemap.utils;
 
 import android.Manifest;
 import android.app.AlertDialog;

@@ -1,14 +1,14 @@
-package com.edu.hrbeu.googlemap;
+package com.edu.hrbeu.googlemap.utils;
 
 
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
-import android.databinding.BindingAdapter;
 import android.net.Uri;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.edu.hrbeu.googlemap.R;
 
 public class ImgLoadUtil {
     private static ImgLoadUtil instance;
